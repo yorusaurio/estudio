@@ -1,0 +1,2263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Profesional — Agile, Scrum, Kanban, DevOps & Lean</title>
+  <style>
+    :root {
+      --bg-primary: #0f1419;
+      --bg-secondary: #1a2332;
+      --bg-card: #1e2a3a;
+      --bg-hover: #253447;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border: #334155;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 1rem; }
+    h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent); }
+    .subtitle { color: var(--text-secondary); margin-bottom: 2rem; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-group { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .topic-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem; margin: 1.5rem 0;
+    }
+    .topic-tag {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .mode-toggle {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg-secondary); border-radius: 10px;
+      padding: 0.5rem; margin: 1.5rem 0;
+    }
+    .mode-toggle label {
+      flex: 1; text-align: center; padding: 0.6rem 1rem;
+      border-radius: 8px; cursor: pointer; font-weight: 600;
+      transition: all 0.2s; color: var(--text-secondary);
+    }
+    .mode-toggle input { display: none; }
+    .mode-toggle input:checked + label {
+      background: var(--accent); color: white;
+    }
+    .exam-header {
+      display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+      justify-content: space-between; margin-bottom: 1.5rem;
+    }
+    .exam-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .meta-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.9rem; color: var(--text-secondary);
+    }
+    .meta-item strong { color: var(--text-primary); }
+    .progress-wrap { margin-bottom: 1.5rem; }
+    .progress-bar {
+      height: 8px; background: var(--bg-secondary);
+      border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), #60a5fa);
+      border-radius: 4px; transition: width 0.3s;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;
+    }
+    .question-topic {
+      display: inline-block; background: rgba(59,130,246,0.15);
+      color: var(--accent); font-size: 0.8rem; font-weight: 600;
+      padding: 0.25rem 0.75rem; border-radius: 20px; margin-bottom: 1rem;
+    }
+    .question-type-badge {
+      display: inline-block; background: var(--bg-secondary);
+      color: var(--text-muted); font-size: 0.75rem;
+      padding: 0.2rem 0.6rem; border-radius: 4px; margin-left: 0.5rem;
+    }
+    .question-text {
+      font-size: 1.1rem; font-weight: 500; margin-bottom: 1.25rem;
+      line-height: 1.7;
+    }
+    .scenario-box {
+      background: var(--bg-secondary); border-left: 4px solid var(--warning);
+      padding: 1rem 1.25rem; border-radius: 0 8px 8px 0;
+      margin-bottom: 1.25rem; font-size: 0.95rem; color: var(--text-secondary);
+    }
+    .options-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .option-item {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.85rem 1rem; background: var(--bg-secondary);
+      border: 2px solid var(--border); border-radius: 8px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .option-item:hover { border-color: var(--accent); background: var(--bg-hover); }
+    .option-item.selected { border-color: var(--accent); background: rgba(59,130,246,0.1); }
+    .option-item.correct { border-color: var(--success); background: rgba(34,197,94,0.1); }
+    .option-item.incorrect { border-color: var(--danger); background: rgba(239,68,68,0.1); }
+    .option-letter {
+      flex-shrink: 0; width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-card); border-radius: 6px;
+      font-weight: 700; font-size: 0.85rem;
+    }
+    .fill-input {
+      width: 100%; padding: 0.85rem 1rem;
+      background: var(--bg-secondary); border: 2px solid var(--border);
+      border-radius: 8px; color: var(--text-primary);
+      font-size: 1rem; font-family: inherit;
+    }
+    .fill-input:focus { outline: none; border-color: var(--accent); }
+    .order-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .order-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem; background: var(--bg-secondary);
+      border: 1px solid var(--border); border-radius: 8px; cursor: grab;
+    }
+    .order-item:active { cursor: grabbing; }
+    .order-handle { color: var(--text-muted); font-size: 1.2rem; }
+    .match-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .match-container { grid-template-columns: 1fr; } }
+    .match-column h4 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .match-item {
+      padding: 0.6rem 0.8rem; background: var(--bg-secondary);
+      border: 1px solid var(--border); border-radius: 6px;
+      margin-bottom: 0.4rem; font-size: 0.9rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .match-item.selected-left { border-color: var(--accent); background: rgba(59,130,246,0.15); }
+    .match-item.matched { border-color: var(--success); opacity: 0.7; }
+    .match-pairs { margin-top: 1rem; }
+    .match-pair {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem; background: var(--bg-secondary);
+      border-radius: 6px; margin-bottom: 0.3rem; font-size: 0.85rem;
+    }
+    .review-flag {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;
+    }
+    .review-flag input { width: 18px; height: 18px; accent-color: var(--warning); }
+    .explanation-panel {
+      margin-top: 1.5rem; padding: 1.25rem;
+      background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3);
+      border-radius: var(--radius);
+    }
+    .explanation-panel h4 { color: var(--accent); margin-bottom: 0.75rem; }
+    .explanation-panel p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .wrong-reason { color: var(--danger); font-size: 0.9rem; margin-top: 0.4rem; }
+    .results-summary {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .result-stat {
+      text-align: center; padding: 1.25rem;
+      background: var(--bg-secondary); border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .result-stat .value { font-size: 2rem; font-weight: 700; }
+    .result-stat .label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .result-stat.pass .value { color: var(--success); }
+    .result-stat.fail .value { color: var(--danger); }
+    .review-item {
+      padding: 1.25rem; margin-bottom: 1rem;
+      background: var(--bg-secondary); border-radius: var(--radius);
+      border-left: 4px solid var(--border);
+    }
+    .review-item.correct { border-left-color: var(--success); }
+    .review-item.incorrect { border-left-color: var(--danger); }
+    .review-item.unanswered { border-left-color: var(--warning); }
+    .review-q { font-weight: 600; margin-bottom: 0.5rem; }
+    .review-answer { font-size: 0.9rem; color: var(--text-secondary); }
+    .timer { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .nav-dots {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      margin-top: 1rem; max-height: 80px; overflow-y: auto;
+    }
+    .nav-dot {
+      width: 28px; height: 28px; border-radius: 4px;
+      border: 1px solid var(--border); background: var(--bg-secondary);
+      font-size: 0.7rem; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .nav-dot.current { background: var(--accent); border-color: var(--accent); color: white; }
+    .nav-dot.answered { background: rgba(34,197,94,0.2); border-color: var(--success); }
+    .nav-dot.review { background: rgba(245,158,11,0.2); border-color: var(--warning); }
+    .logo { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .start-info { margin: 1.5rem 0; }
+    .start-info li { margin-left: 1.5rem; margin-bottom: 0.4rem; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- PANTALLA INICIO -->
+    <div id="screen-start" class="screen active">
+      <div class="card">
+        <div class="logo">&#9881;</div>
+        <h1>Simulador Profesional de Certificación</h1>
+        <p class="subtitle">Agile &middot; Scrum &middot; Kanban &middot; DevOps &middot; Lean</p>
+        <p style="color:var(--text-secondary);margin-bottom:1rem;">
+          100 preguntas de nivel certificación (PSM I, PSPO I, KMP, DevOps Foundation).
+          Cubre todos los temas del programa LSU.
+        </p>
+        <div class="topic-grid" id="topics-preview"></div>
+        <div class="mode-toggle">
+          <input type="radio" name="mode" id="mode-exam" value="exam" checked>
+          <label for="mode-exam">Modo Examen</label>
+          <input type="radio" name="mode" id="mode-study" value="study">
+          <label for="mode-study">Modo Estudio</label>
+        </div>
+        <ul class="start-info">
+          <li><strong>Modo Examen:</strong> Sin retroalimentación hasta finalizar. Temporizador activo.</li>
+          <li><strong>Modo Estudio:</strong> Explicación inmediata tras cada respuesta.</li>
+        </ul>
+        <button class="btn btn-primary" id="btn-start" style="width:100%;padding:1rem;font-size:1.1rem;">
+          Iniciar Simulador
+        </button>
+      </div>
+    </div>
+
+    <!-- PANTALLA EXAMEN -->
+    <div id="screen-exam" class="screen">
+      <div class="exam-header">
+        <div class="exam-meta">
+          <div class="meta-item">Pregunta <strong id="q-current">1</strong> / <strong>100</strong></div>
+          <div class="meta-item">&#9201; <span class="timer" id="timer">00:00:00</span></div>
+        </div>
+        <div class="meta-item" id="mode-badge">Modo Examen</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-label"><span id="progress-text">0%</span><span id="answered-count">0 respondidas</span></div>
+      </div>
+      <div class="card" id="question-card"></div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" id="btn-prev">&#8592; Anterior</button>
+        <button class="btn btn-secondary" id="btn-next">Siguiente &#8594;</button>
+        <button class="btn btn-danger" id="btn-finish">Finalizar Examen</button>
+      </div>
+      <div class="nav-dots" id="nav-dots"></div>
+    </div>
+
+    <!-- PANTALLA RESULTADOS -->
+    <div id="screen-results" class="screen">
+      <div class="card">
+        <h2>Resultados del Examen</h2>
+        <div class="results-summary" id="results-summary"></div>
+        <div id="results-detail"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btn-restart">Nuevo Examen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+// ============================================================
+// BANCO DE PREGUNTAS — 100 preguntas profesionales
+// Agregar nuevas preguntas al final de este arreglo
+// ============================================================
+const QUESTIONS_BANK = [
+  // --- 1. MANIFIESTO ÁGIL (7) ---
+  {
+    id: 1, topic: "Manifiesto Ágil", type: "multiple_choice",
+    question: "¿Cuál de los siguientes NO es uno de los cuatro valores del Manifiesto Ágil?",
+    options: [
+      "Individuos e interacciones sobre procesos y herramientas",
+      "Software funcionando sobre documentación extensiva",
+      "Colaboración con el cliente sobre negociación contractual",
+      "Planificación detallada sobre respuesta al cambio"
+    ],
+    correct: 3,
+    explanation: "El cuarto valor es 'Responder al cambio sobre seguir un plan', no planificación detallada sobre respuesta al cambio. El manifiesto valora la adaptabilidad, no la planificación rígida.",
+    whyWrong: [null, null, null, "Invierte el valor correcto. El manifiesto prioriza responder al cambio, no seguir un plan rígido."]
+  },
+  {
+    id: 2, topic: "Manifiesto Ágil", type: "true_false",
+    question: "El Manifiesto Ágil fue redactado en 2001 en Snowbird, Utah, por 17 practicantes de metodologías ligeras de desarrollo de software.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Efectivamente, en febrero de 2001, 17 líderes del movimiento de metodologías ágiles se reunieron y publicaron el Manifiesto para el Desarrollo Ágil de Software.",
+    whyWrong: [null, "La reunión histórica de Snowbird en 2001 con 17 firmantes es un hecho documentado del origen del movimiento ágil."]
+  },
+  {
+    id: 3, topic: "Manifiesto Ágil", type: "scenario",
+    scenario: "Un equipo de 15 personas trabaja en un proyecto regulado donde cada cambio requiere aprobación de tres comités externos antes de implementarse. El gerente insiste en adoptar 'ágil' eliminando toda documentación.",
+    question: "Según el Manifiesto Ágil, ¿cuál es el enfoque más apropiado?",
+    options: [
+      "Eliminar toda documentación ya que el manifiesto la desprecia completamente",
+      "Mantener documentación suficiente sin que sustituya al software funcionando como medida principal de progreso",
+      "Abandonar ágil y volver a cascada exclusivamente",
+      "Ignorar los comités externos para maximizar velocidad"
+    ],
+    correct: 1,
+    explanation: "El manifiesto dice 'software funcionando SOBRE documentación extensiva', no 'en lugar de toda documentación'. En contextos regulados se necesita documentación, pero no debe reemplazar la entrega de valor funcional.",
+    whyWrong: [
+      "El manifiesto no elimina la documentación; la relativiza frente al software funcionando.",
+      null,
+      "Ágil puede aplicarse en contextos regulados con adaptaciones.",
+      "Ignorar regulaciones externas no es ágil ni profesional."
+    ]
+  },
+  {
+    id: 4, topic: "Manifiesto Ágil", type: "fill_blank",
+    question: "El principio ágil número 8 establece que los procesos ágiles promueven el desarrollo ___",
+    correct: "sostenible",
+    accept: ["sostenible", "sustentable"],
+    explanation: "El principio 8 dice: 'Los procesos ágiles promueven el desarrollo sostenible. Los patrocinadores, desarrolladores y usuarios deberían poder mantener un ritmo constante indefinidamente.'"
+  },
+  {
+    id: 5, topic: "Manifiesto Ágil", type: "multiple_choice",
+    question: "¿Cuál principio del Manifiesto Ágil se relaciona directamente con la mejora continua del diseño técnico?",
+    options: [
+      "La simplicidad — el arte de maximizar la cantidad de trabajo no realizado — es esencial",
+      "La atención continua a la excelencia técnica y al buen diseño mejora la agilidad",
+      "Los proyectos se desarrollan en torno a individuos motivados",
+      "Las mejores arquitecturas emergen de equipos auto-organizados"
+    ],
+    correct: 1,
+    explanation: "El principio 9 establece explícitamente que la atención continua a la excelencia técnica y al buen diseño mejora la agilidad, permitiendo responder al cambio con mayor facilidad.",
+    whyWrong: [
+      "El principio de simplicidad (10) se refiere a minimizar trabajo innecesario, no específicamente al diseño técnico.",
+      null,
+      "El principio 5 habla de individuos motivados, no de diseño técnico.",
+      "El principio 11 habla de arquitecturas emergentes, no de excelencia técnica continua."
+    ]
+  },
+  {
+    id: 6, topic: "Manifiesto Ágil", type: "order",
+    question: "Ordena estos enfoques según la prioridad que establece el Manifiesto Ágil (de mayor a menor prioridad):",
+    items: [
+      "Negociación contractual",
+      "Colaboración con el cliente",
+      "Procesos y herramientas",
+      "Individuos e interacciones"
+    ],
+    correctOrder: [3, 2, 1, 0],
+    explanation: "Los valores del manifiesto establecen prioridad: Individuos > Procesos; Software > Documentación; Colaboración > Negociación; Cambio > Plan."
+  },
+  {
+    id: 7, topic: "Manifiesto Ágil", type: "multiple_choice",
+    question: "¿Cuál es la diferencia fundamental entre el enfoque en cascada y el ágil respecto al manejo de requisitos?",
+    options: [
+      "Cascada no usa requisitos; ágil sí",
+      "Cascada define requisitos completos al inicio; ágil los descubre y refina iterativamente",
+      "Ágil no documenta requisitos bajo ninguna circunstancia",
+      "Cascada permite cambios libres en cualquier fase"
+    ],
+    correct: 1,
+    explanation: "En cascada los requisitos se congelan temprano (análisis → diseño → construcción). En ágil los requisitos emergen y evolucionan mediante feedback continuo en cada iteración.",
+    whyWrong: [
+      "Ambos usan requisitos; difieren en cuándo y cómo se definen.",
+      null,
+      "Ágil sí documenta requisitos (historias de usuario, criterios de aceptación), pero de forma evolutiva.",
+      "Cascada es rígida ante cambios; ese es precisamente su principal limitación."
+    ]
+  },
+
+  // --- 2. SCRUM (14) ---
+  {
+    id: 8, topic: "Scrum", type: "multiple_choice",
+    question: "Según la Guía Scrum 2020, ¿cuántos eventos formales contiene el framework de Scrum?",
+    options: ["3", "4", "5", "6"],
+    correct: 2,
+    explanation: "Scrum tiene 5 eventos: Sprint, Sprint Planning, Daily Scrum, Sprint Review y Sprint Retrospective. El Sprint contiene los otros cuatro.",
+    whyWrong: ["Faltan eventos.", "Faltan eventos.", null, "Solo hay 5 eventos formales en Scrum."]
+  },
+  {
+    id: 9, topic: "Scrum", type: "scenario",
+    scenario: "Durante el Sprint Planning, el Product Owner propone 40 historias para un Sprint de 2 semanas. El equipo históricamente completa 15 historias por Sprint.",
+    question: "¿Cuál es la responsabilidad correcta del Scrum Master en esta situación?",
+    options: [
+      "Aceptar las 40 historias porque el PO decide el alcance",
+      "Facilitar que el equipo determine qué puede comprometerse realmente basándose en su capacidad",
+      "Imponer un límite arbitrario de 15 historias sin consultar al equipo",
+      "Cancelar el Sprint Planning y posponerlo una semana"
+    ],
+    correct: 1,
+    explanation: "El Scrum Master facilita el proceso. El equipo de Developers es quien determina cuánto trabajo puede comprometerse. El PO prioriza, pero no impone cantidad irreal.",
+    whyWrong: [
+      "El PO prioriza pero no dicta la capacidad del equipo.",
+      null,
+      "El SM no impone decisiones; facilita la auto-organización.",
+      "Posponer sin causa no resuelve el problema de planificación."
+    ]
+  },
+  {
+    id: 10, topic: "Scrum", type: "true_false",
+    question: "El Product Owner puede delegar su responsabilidad de maximizar el valor del producto en múltiples personas, siempre que haya un único Product Owner accountable.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Scrum 2020 establece que debe haber un solo Product Owner accountable, pero puede delegar trabajo. La accountability no se delega.",
+    whyWrong: [null, "La delegación de trabajo es permitida; la accountability permanece en una persona."]
+  },
+  {
+    id: 11, topic: "Scrum", type: "multiple_choice",
+    question: "¿Cuál es la duración máxima de un Sprint según Scrum?",
+    options: ["2 semanas", "3 semanas", "1 mes", "No hay máximo definido"],
+    correct: 2,
+    explanation: "Scrum define que los Sprints tienen duración fija de un mes o menos. No hay mínimo, pero el máximo es un mes.",
+    whyWrong: ["2 semanas es común pero no es el máximo.", "3 semanas no es el límite oficial.", null, "Scrum sí define un máximo de un mes."]
+  },
+  {
+    id: 12, topic: "Scrum", type: "fill_blank",
+    question: "El evento donde el equipo inspecciona el incremento y adapta el Product Backlog se llama Sprint ___",
+    correct: "Review",
+    accept: ["review", "sprint review", "revisión", "revision"],
+    explanation: "El Sprint Review es el evento de inspección del incremento con stakeholders, donde se recopila feedback y se adapta el Product Backlog."
+  },
+  {
+    id: 13, topic: "Scrum", type: "multiple_choice",
+    question: "¿Qué caracteriza al Incremento en Scrum?",
+    options: [
+      "Es cualquier código escrito durante el Sprint, aunque no cumpla la DoD",
+      "Es la suma de todos los elementos del Product Backlog completados durante el Sprint más incrementos anteriores",
+      "Solo incluye lo demostrado en el Sprint Review",
+      "Es un documento de planificación para el siguiente Sprint"
+    ],
+    correct: 1,
+    explanation: "El Incremento es la suma concreta de todos los PBIs completados durante el Sprint más el valor de incrementos previos. Debe estar en usable condition y cumplir la Definition of Done.",
+    whyWrong: [
+      "Debe cumplir la DoD para ser parte del Incremento.",
+      null,
+      "El incremento existe independientemente de la demo.",
+      "El incremento es producto funcional, no documentación de planificación."
+    ]
+  },
+  {
+    id: 14, topic: "Scrum", type: "scenario",
+    scenario: "Un Developer del equipo no asiste al Daily Scrum tres días consecutivos sin avisar. El Sprint está en riesgo.",
+    question: "¿Quién es responsable de asegurar que el Daily Scrum ocurra y sea efectivo?",
+    options: ["El Product Owner", "El Scrum Master", "El gerente de proyecto", "El cliente"],
+    correct: 1,
+    explanation: "El Scrum Master es accountable de la efectividad de Scrum, lo que incluye asegurar que los eventos ocurran y sean productivos. Sin embargo, los Developers son responsables de conducir el Daily Scrum.",
+    whyWrong: [
+      "El PO se enfoca en maximizar valor del producto.",
+      null,
+      "Scrum no tiene rol de gerente de proyecto.",
+      "El cliente no gestiona eventos internos del equipo."
+    ]
+  },
+  {
+    id: 15, topic: "Scrum", type: "multiple_choice",
+    question: "¿Cuál es el propósito principal del Sprint Retrospective?",
+    options: [
+      "Revisar el incremento con stakeholders",
+      "Planificar el trabajo del siguiente Sprint",
+      "Inspeccionar cómo fue el último Sprint y crear un plan de mejoras",
+      "Refinar el Product Backlog"
+    ],
+    correct: 2,
+    explanation: "La Retrospective inspecciona personas, relaciones, procesos y herramientas del Sprint pasado y crea un plan de mejoras para el siguiente Sprint.",
+    whyWrong: [
+      "Eso es el Sprint Review.",
+      "Eso es el Sprint Planning.",
+      null,
+      "El refinamiento es actividad continua, no el propósito de la retro."
+    ]
+  },
+  {
+    id: 16, topic: "Scrum", type: "multiple_choice",
+    question: "Según INVEST, ¿qué significa la 'V' en una buena Historia de Usuario?",
+    options: ["Validada", "Valiosa", "Verificable", "Viable"],
+    correct: 1,
+    explanation: "INVEST: Independent, Negotiable, Valuable, Estimable, Small, Testable. La V es Valuable (valiosa) — debe aportar valor al usuario o stakeholder.",
+    whyWrong: [
+      "Validada no es parte de INVEST.",
+      null,
+      "Verificable corresponde a Testable (T).",
+      "Viable no es parte del acrónimo INVEST."
+    ]
+  },
+  {
+    id: 17, topic: "Scrum", type: "order",
+    question: "Ordena los pasos típicos de Planning Poker:",
+    items: [
+      "El moderador lee la historia de usuario",
+      "Cada participante selecciona una carta en secreto",
+      "Se revelan las cartas simultáneamente",
+      "Se discuten las diferencias significativas y se repite si es necesario"
+    ],
+    correctOrder: [0, 1, 2, 3],
+    explanation: "Planning Poker: leer historia → selección secreta → revelación simultánea → discusión de discrepancias → consenso o nueva ronda."
+  },
+  {
+    id: 18, topic: "Scrum", type: "multiple_choice",
+    question: "¿Qué mide principalmente un Burndown Chart del Sprint?",
+    options: [
+      "La velocidad del equipo en múltiples Sprints",
+      "El trabajo restante versus el tiempo transcurrido en el Sprint actual",
+      "El lead time de cada historia",
+      "La satisfacción del cliente"
+    ],
+    correct: 1,
+    explanation: "El Sprint Burndown muestra trabajo restante (eje Y) vs tiempo (eje X) dentro de un Sprint, permitiendo visualizar si el equipo va en camino de completar el compromiso.",
+    whyWrong: [
+      "La velocidad se mide con múltiples Sprints, no un burndown individual.",
+      null,
+      "Lead time es métrica de Kanban, no de burndown.",
+      "La satisfacción no se mide con burndown."
+    ]
+  },
+  {
+    id: 19, topic: "Scrum", type: "true_false",
+    question: "Un Spike en Scrum es una historia de usuario cuyo objetivo principal es investigar o reducir incertidumbre técnica, no entregar funcionalidad de producto.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Un Spike es trabajo time-boxed para investigar, prototipar o adquirir conocimiento necesario para estimar o implementar historias futuras.",
+    whyWrong: [null, "Los Spikes son una práctica reconocida para abordar incertidumbre."]
+  },
+  {
+    id: 20, topic: "Scrum", type: "scenario",
+    scenario: "El equipo tiene velocity de 30 puntos. El PO quiere entregar un Epic estimado en 90 puntos para una fecha en 2 Sprints.",
+    question: "¿Cuál es el análisis más correcto desde Scrum?",
+    options: [
+      "Es viable si el equipo trabaja horas extra",
+      "Con velocity de 30, necesitarían ~3 Sprints; deben negociar alcance, fecha o recursos con transparencia",
+      "El velocity no es relevante para planificación",
+      "Deben dividir el Epic en 2 partes de 45 puntos y forzar la entrega"
+    ],
+    correct: 1,
+    explanation: "Velocity es métrica de forecasting basada en datos históricos. 90 puntos ÷ 30 velocity = 3 Sprints. Scrum promueve transparencia para negociar alcance o plazo, no forzar compromisos irreales.",
+    whyWrong: [
+      "Horas extra no es sostenible ni ágil.",
+      null,
+      "Velocity es clave para release planning.",
+      "Dividir numéricamente no reduce el trabajo real."
+    ]
+  },
+  {
+    id: 21, topic: "Scrum", type: "multiple_choice",
+    question: "¿Cuál es la diferencia entre un Epic y una Feature?",
+    options: [
+      "Son sinónimos en Scrum",
+      "Un Epic es un cuerpo grande de trabajo descompuesto en historias; una Feature es una funcionalidad específica del producto",
+      "Epic es para bugs; Feature es para nuevas funciones",
+      "Feature es más grande que Epic"
+    ],
+    correct: 1,
+    explanation: "Epic es un contenedor grande de trabajo que se descompone en historias/features. Feature describe una capacidad específica del producto que aporta valor.",
+    whyWrong: [
+      "Tienen significados distintos en gestión de producto ágil.",
+      null,
+      "Ambos pueden aplicarse a cualquier tipo de trabajo.",
+      "Epic es típicamente más grande que Feature."
+    ]
+  },
+
+  // --- 3. LEAN STARTUP (5) ---
+  {
+    id: 22, topic: "Lean Startup", type: "multiple_choice",
+    question: "En el ciclo Construir-Medir-Aprender, ¿qué actividad corresponde a 'Medir'?",
+    options: [
+      "Desarrollar el MVP y lanzarlo al mercado",
+      "Recopilar datos y métricas de acción sobre el comportamiento real de usuarios",
+      "Tomar la decisión de pivotar o persistir",
+      "Definir la visión del producto"
+    ],
+    correct: 1,
+    explanation: "Medir es la fase donde se recopilan datos empíricos (métricas de acción, cohortes, A/B tests) para validar o invalidar hipótesis.",
+    whyWrong: ["Eso es Construir.", null, "Eso es Aprender (decisión).", "La visión precede al ciclo."]
+  },
+  {
+    id: 23, topic: "Lean Startup", type: "true_false",
+    question: "Aprendizaje Validado significa demostrar empíricamente que las hipótesis del negocio son correctas mediante experimentos con datos reales.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Eric Ries define Aprendizaje Validado como el proceso de demostrar empíricamente que un equipo ha descubierto verdades valiosas sobre las perspectivas comerciales.",
+    whyWrong: [null, "Es la definición central del concepto de Lean Startup."]
+  },
+  {
+    id: 24, topic: "Lean Startup", type: "scenario",
+    scenario: "Una startup lanza un MVP de app de delivery. Las métricas muestran alto registro pero 90% abandona antes del primer pedido. El equipo quiere agregar 10 funcionalidades nuevas.",
+    question: "¿Cuál es la respuesta más alineada con Lean Startup?",
+    options: [
+      "Agregar las 10 funcionalidades rápidamente",
+      "Formular hipótesis sobre por qué abandonan, diseñar experimento mínimo y medir antes de construir más",
+      "Pivotar inmediatamente a otro mercado sin análisis",
+      "Persistir porque el registro alto valida el producto"
+    ],
+    correct: 1,
+    explanation: "El registro no es validación del valor. Lean Startup exige identificar la hipótesis (¿por qué no convierten?), experimentar mínimamente y medir antes de invertir en más features.",
+    whyWrong: [
+      "Construir sin entender el problema es desperdicio.",
+      null,
+      "Pivotar sin datos es prematuro.",
+      "Registro ≠ retención ni valor validado."
+    ]
+  },
+  {
+    id: 25, topic: "Lean Startup", type: "fill_blank",
+    question: "Cuando los experimentos demuestran que la hipótesis fundamental del negocio es incorrecta, la startup debe considerar ___ su estrategia.",
+    correct: "pivotar",
+    accept: ["pivotar", "pivot", "un pivot", "hacer pivot"],
+    explanation: "Pivotar es cambiar estratégicamente la dirección del producto/negocio basándose en aprendizaje validado, manteniendo lo aprendido."
+  },
+  {
+    id: 26, topic: "Lean Startup", type: "multiple_choice",
+    question: "¿Cuál es el objetivo principal de un MVP en Lean Startup?",
+    options: [
+      "Lanzar un producto con todas las funcionalidades planeadas",
+      "Iniciar el proceso de aprendizaje con el mínimo esfuerzo para validar hipótesis",
+      "Impresionar a inversores con un prototipo pulido",
+      "Reemplazar el testing de QA"
+    ],
+    correct: 1,
+    explanation: "El MVP no es el producto más pequeño imaginable, sino la versión que permite recorrer el ciclo Construir-Medir-Aprender con mínimo esfuerzo y máximo aprendizaje validado.",
+    whyWrong: [
+      "MVP es mínimo viable, no completo.",
+      null,
+      "El objetivo es aprendizaje, no impresionar.",
+      "MVP no sustituye QA."
+    ]
+  },
+
+  // --- 4. LEAN INCEPTION (5) ---
+  {
+    id: 27, topic: "Lean Inception", type: "multiple_choice",
+    question: "¿Cuál es el propósito del Elevator Pitch en Lean Inception?",
+    options: [
+      "Definir la arquitectura técnica del sistema",
+      "Comunicar la propuesta de valor del producto de forma concisa y convincente",
+      "Estimar el esfuerzo de desarrollo",
+      "Crear el tablero Kanban"
+    ],
+    correct: 1,
+    explanation: "El Elevator Pitch sintetiza para quién es el producto, qué problema resuelve, cómo lo resuelve y qué lo diferencia, en un formato breve y memorable.",
+    whyWrong: ["La arquitectura viene después.", null, "La estimación es actividad separada.", "Kanban es herramienta de flujo, no de visión."]
+  },
+  {
+    id: 28, topic: "Lean Inception", type: "match",
+    question: "Relaciona cada artefacto de Lean Inception con su propósito:",
+    left: ["User Persona", "Journey Map", "Pentágono del MVP", "Visión"],
+    right: [
+      "Dirección estratégica a largo plazo del producto",
+      "Representación ficticia del usuario ideal basada en datos",
+      "Visualización del recorrido del usuario con puntos de dolor",
+      "Define alcance mínimo: usuarios, features, UX, métricas y costos"
+    ],
+    correctPairs: [1, 2, 3, 0],
+    explanation: "Persona = usuario ideal; Journey = recorrido; Pentágono = 5 dimensiones del MVP; Visión = dirección estratégica."
+  },
+  {
+    id: 29, topic: "Lean Inception", type: "true_false",
+    question: "En Lean Inception, separar funcionalidades entre Frontend y Backend es una actividad para entender la arquitectura y priorizar el MVP.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Paulo Caroli incluye la separación FE/BE para visualizar dependencias técnicas y tomar decisiones informadas sobre qué incluir en el MVP.",
+    whyWrong: [null, "Es parte del workshop de Lean Inception."]
+  },
+  {
+    id: 30, topic: "Lean Inception", type: "multiple_choice",
+    question: "¿Qué dimensiones incluye el Pentágono del MVP?",
+    options: [
+      "Solo funcionalidades y usuarios",
+      "Usuarios, Features, Experiencia de Usuario, Métricas de éxito y Costos operativos",
+      "Frontend, Backend, Base de datos, API y DevOps",
+      "Sprint, Backlog, Velocity, Burndown y Retrospectiva"
+    ],
+    correct: 1,
+    explanation: "El Pentágono del MVP evalúa 5 dimensiones: quiénes son los usuarios, qué features mínimas, qué UX, cómo medir éxito y qué costos operativos implica.",
+    whyWrong: [
+      "Es más amplio que solo funcionalidades.",
+      null,
+      "Eso es arquitectura técnica, no el pentágono.",
+      "Esos son conceptos de Scrum."
+    ]
+  },
+  {
+    id: 31, topic: "Lean Inception", type: "scenario",
+    scenario: "Durante Lean Inception, el equipo identifica 50 funcionalidades. La fecha límite permite construir solo 8 en el primer ciclo.",
+    question: "¿Cuál es el enfoque correcto según Lean Inception?",
+    options: [
+      "Incluir las 50 funcionalidades con alcance reducido cada una",
+      "Usar criterios del Pentágono del MVP para seleccionar el conjunto mínimo que valida la hipótesis principal",
+      "Construir solo la infraestructura sin funcionalidades",
+      "Posponer Lean Inception y comenzar a codificar"
+    ],
+    correct: 1,
+    explanation: "Lean Inception busca alinear al equipo en el MVP mínimo que valida la hipótesis de valor, usando el Pentágono y priorización colaborativa.",
+    whyWrong: [
+      "50 funcionalidades no es 'mínimo' viable.",
+      null,
+      "Infraestructura sola no valida valor al usuario.",
+      "Codificar sin alineación genera desperdicio."
+    ]
+  },
+
+  // --- 5. CYNEFIN (5) ---
+  {
+    id: 32, topic: "Cynefin", type: "multiple_choice",
+    question: "En el framework Cynefin, ¿en qué dominio las relaciones causa-efecto son obvias para todos?",
+    options: ["Complejo", "Complicado", "Simple (Obvio)", "Caótico"],
+    correct: 2,
+    explanation: "En el dominio Simple/Obvio, las relaciones causa-efecto son evidentes. La respuesta es 'sense-categorize-respond' (sentir-categorizar-responder).",
+    whyWrong: [
+      "En Complejo las relaciones solo son visibles retrospectivamente.",
+      "En Complicado requieren análisis experto.",
+      null,
+      "En Caótico no hay relaciones discernibles."
+    ]
+  },
+  {
+    id: 33, topic: "Cynefin", type: "multiple_choice",
+    question: "¿Cuándo es más apropiado usar enfoques ágiles según Cynefin?",
+    options: [
+      "Dominio Simple, aplicando procedimientos estándar",
+      "Dominio Complejo, donde se requiere probar, sentir y responder",
+      "Dominio Caótico, planificando a largo plazo",
+      "Dominio Complicado, siguiendo solo buenas prácticas sin experimentación"
+    ],
+    correct: 1,
+    explanation: "En el dominio Complejo no se pueden predecir resultados; se necesitan experimentos seguros-fallar (safe-to-fail), iteración y feedback — exactamente lo que ofrece ágil.",
+    whyWrong: [
+      "Simple requiere procedimientos, no ágil.",
+      null,
+      "Caótico requiere actuar primero, no planificar.",
+      "Complicado requiere análisis experto, no necesariamente ágil."
+    ]
+  },
+  {
+    id: 34, topic: "Cynefin", type: "order",
+    question: "Ordena los dominios de Cynefin de mayor predictibilidad a menor predictibilidad:",
+    items: ["Caótico", "Simple", "Complejo", "Complicado"],
+    correctOrder: [1, 3, 2, 0],
+    explanation: "Predictibilidad: Simple (alta) → Complicado (analizable) → Complejo (emergente) → Caótico (sin patrones discernibles)."
+  },
+  {
+    id: 35, topic: "Cynefin", type: "scenario",
+    scenario: "Un incidente de seguridad acaba de derrumbar todos los servicios en producción. No se conoce la causa. Los clientes están afectados.",
+    question: "¿En qué dominio Cynefin está esta situación y qué acción corresponde?",
+    options: [
+      "Complejo: diseñar experimentos safe-to-fail durante las próximas semanas",
+      "Caótico: actuar inmediatamente para estabilizar, luego evaluar",
+      "Simple: aplicar el procedimiento estándar de deploy",
+      "Complicado: convocar expertos para análisis de una semana antes de actuar"
+    ],
+    correct: 1,
+    explanation: "En Caótico no hay relaciones causa-efecto discernibles. Se debe actuar inmediatamente (act-sense-respond) para estabilizar, luego investigar.",
+    whyWrong: [
+      "Complejo permite más tiempo; aquí hay crisis activa.",
+      null,
+      "No hay procedimiento conocido para esta crisis.",
+      "Esperar una semana es inaceptable en caos activo."
+    ]
+  },
+  {
+    id: 36, topic: "Cynefin", type: "true_false",
+    question: "El dominio 'Desorden' (Confused) en Cynefin ocurre cuando no se sabe en qué dominio se está operando y se aplican respuestas incorrectas.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Desorden/Confusión es el centro del framework: cuando no se ha categorizado correctamente la situación, llevando a aplicar la respuesta equivocada.",
+    whyWrong: [null, "Es precisamente la definición del dominio central."]
+  },
+
+  // --- 6. KANBAN (10) ---
+  {
+    id: 37, topic: "Kanban", type: "multiple_choice",
+    question: "¿Cuál es la Ley de Little (Little's Law)?",
+    options: [
+      "WIP = Throughput × Lead Time",
+      "Lead Time = WIP / Throughput",
+      "Throughput = Lead Time × WIP",
+      "Cycle Time = Lead Time + WIP"
+    ],
+    correct: 1,
+    explanation: "Little's Law: Lead Time = WIP / Throughput (en sistema estable). Relaciona las tres métricas fundamentales del flujo.",
+    whyWrong: [
+      "La fórmula correcta es LT = WIP/TH, no WIP = TH × LT (aunque matemáticamente equivalente, la forma estándar es LT = WIP/TH).",
+      null,
+      "Fórmula incorrecta.",
+      "Cycle Time y Lead Time son métricas distintas."
+    ]
+  },
+  {
+    id: 38, topic: "Kanban", type: "multiple_choice",
+    question: "¿Cuál es la diferencia entre Lead Time y Cycle Time?",
+    options: [
+      "Son sinónimos",
+      "Lead Time mide desde que se solicita hasta que se entrega; Cycle Time mide desde que se inicia trabajo hasta que se completa",
+      "Cycle Time incluye tiempo en cola; Lead Time no",
+      "Lead Time solo aplica a Scrum"
+    ],
+    correct: 1,
+    explanation: "Lead Time = tiempo total desde solicitud hasta entrega (incluye espera). Cycle Time = tiempo activo de procesamiento desde que entra en 'en progreso' hasta completarse.",
+    whyWrong: [
+      "Son métricas distintas con significados diferentes.",
+      null,
+      "Es al revés: Lead Time incluye tiempo de cola.",
+      "Lead Time es métrica universal de flujo."
+    ]
+  },
+  {
+    id: 39, topic: "Kanban", type: "scenario",
+    scenario: "Un tablero Kanban tiene WIP limit de 3 en 'En Progreso'. Hay 3 tarjetas activas y 15 en la columna 'Por Hacer'.",
+    question: "¿Qué ocurre si se intenta mover una tarjeta más a 'En Progreso' sin completar ninguna?",
+    options: [
+      "Se mueve normalmente; el WIP es solo una sugerencia",
+      "Se viola el límite WIP; el equipo debe completar o desbloquear trabajo antes de iniciar nuevo",
+      "El tablero se reinicia automáticamente",
+      "Las tarjetas de 'Por Hacer' se eliminan"
+    ],
+    correct: 1,
+    explanation: "Los límites WIP son políticas explícitas que forzan pull y foco. Violárselos destruye el flujo y aumenta multitarea. Kanban dice: termina antes de empezar.",
+    whyWrong: [
+      "WIP limits son políticas obligatorias, no sugerencias.",
+      null,
+      "No hay reinicio automático.",
+      "Las tarjetas no se eliminan."
+    ]
+  },
+  {
+    id: 40, topic: "Kanban", type: "multiple_choice",
+    question: "¿Qué principio de Kanban establece que los métodos evolucionan de forma incremental?",
+    options: [
+      "Start with what you do now",
+      "Agree to pursue incremental, evolutionary change",
+      "Respect the current process, roles, responsibilities",
+      "Encourage acts of leadership at every level"
+    ],
+    correct: 1,
+    explanation: "El segundo principio de Kanban es 'Acordar perseguir cambio incremental y evolutivo'. No se hace transformación radical.",
+    whyWrong: [
+      "Ese es el primer principio.",
+      null,
+      "Ese es el tercer principio.",
+      "Ese es el sexto principio."
+    ]
+  },
+  {
+    id: 41, topic: "Kanban", type: "true_false",
+    question: "En Kanban, Pull significa que el trabajo se inicia cuando hay capacidad disponible downstream, no cuando upstream lo empuja.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Pull es fundamental en Kanban: las etapas downstream 'jalan' trabajo cuando tienen capacidad, evitando sobrecarga y trabajo en progreso excesivo.",
+    whyWrong: [null, "Pull vs Push es distinción central de Kanban."]
+  },
+  {
+    id: 42, topic: "Kanban", type: "multiple_choice",
+    question: "¿Qué es una Clase de Servicio en Kanban?",
+    options: [
+      "Un tipo de reunión del equipo",
+      "Una categoría que define políticas de priorización y tratamiento diferenciado del trabajo",
+      "Un límite WIP global",
+      "Un swimlane exclusivo para bugs"
+    ],
+    correct: 1,
+    explanation: "Clases de Servicio (Expedite, Fixed Date, Standard, Intangible) definen cómo se trata cada tipo de trabajo respecto a prioridad, WIP y políticas.",
+    whyWrong: [
+      "No es una reunión.",
+      null,
+      "WIP limit es concepto separado.",
+      "Puede usarse swimlane pero clase de servicio es más amplio."
+    ]
+  },
+  {
+    id: 43, topic: "Kanban", type: "fill_blank",
+    question: "La cantidad de ítems completados por unidad de tiempo en Kanban se llama ___",
+    correct: "Throughput",
+    accept: ["throughput", "rendimiento", "flujo de salida"],
+    explanation: "Throughput mide cuántos ítems se completan por período (día/semana). Es métrica clave junto con Lead Time y WIP."
+  },
+  {
+    id: 44, topic: "Kanban", type: "multiple_choice",
+    question: "¿Para qué sirven los Swimlanes en un tablero Kanban?",
+    options: [
+      "Decorar el tablero visualmente",
+      "Separar tipos de trabajo, clases de servicio o flujos paralelos horizontalmente",
+      "Reemplazar los límites WIP",
+      "Medir velocity del equipo"
+    ],
+    correct: 1,
+    explanation: "Swimlanes son filas horizontales que separan categorías de trabajo (por tipo, equipo, clase de servicio) para visualizar flujos paralelos.",
+    whyWrong: [
+      "Tienen propósito funcional.",
+      null,
+      "Complementan WIP, no lo reemplazan.",
+      "Velocity es concepto de Scrum."
+    ]
+  },
+  {
+    id: 45, topic: "Kanban", type: "scenario",
+    scenario: "El Lead Time promedio del equipo subió de 5 a 15 días. El Throughput se mantuvo constante. El WIP se triplicó.",
+    question: "¿Qué indica el análisis según Little's Law?",
+    options: [
+      "Es normal y no requiere acción",
+      "El aumento de WIP explica el incremento de Lead Time; se deben reducir límites WIP",
+      "Hay que aumentar más WIP para compensar",
+      "El Throughput debe medirse en horas"
+    ],
+    correct: 1,
+    explanation: "Little's Law: LT = WIP/TH. Si TH es constante y WIP se triplica, LT se triplica. Solución: reducir WIP para bajar Lead Time.",
+    whyWrong: [
+      "Un triplicamiento de LT es señal de problema de flujo.",
+      null,
+      "Más WIP empeoraría el Lead Time.",
+      "Throughput se mide en ítems/tiempo, no horas."
+    ]
+  },
+  {
+    id: 46, topic: "Kanban", type: "multiple_choice",
+    question: "¿Qué son las Políticas Explícitas en Kanban?",
+    options: [
+      "Reglas no escritas que cada uno interpreta",
+      "Acuerdos visibles y compartidos sobre cómo se mueve el trabajo en el tablero",
+      "Documentos legales del contrato",
+      "Políticas de RRHH"
+    ],
+    correct: 1,
+    explanation: "Políticas explícitas hacen visibles las reglas del tablero: definición de columnas, criterios de pull, clases de servicio, límites WIP. Todos las conocen.",
+    whyWrong: [
+      "Deben ser explícitas, no implícitas.",
+      null,
+      "No son documentos legales.",
+      "No tienen relación con RRHH."
+    ]
+  },
+
+  // --- 7. STATIK KANBAN (6) ---
+  {
+    id: 47, topic: "STATIK Kanban", type: "multiple_choice",
+    question: "¿Qué significa STATIK en el contexto de Kanban?",
+    options: [
+      "System Thinking Approach To Introducing Kanban",
+      "Strategic Technical Analysis Tool for IT Kanban",
+      "Standard Template for Agile Teams in Kanban",
+      "Scrum Transition And Team Integration Kit"
+    ],
+    correct: 0,
+    explanation: "STATIK = System Thinking Approach To Introducing Kanban. Es un método de 8 pasos para diseñar un sistema Kanban desde cero.",
+    whyWrong: ["Las otras opciones son inventadas.", null, null, null]
+  },
+  {
+    id: 48, topic: "STATIK Kanban", type: "order",
+    question: "Ordena las actividades de STATIK en secuencia lógica (simplificada):",
+    items: [
+      "Identificar fuentes de insatisfacción",
+      "Analizar demanda y capacidad",
+      "Modelar el flujo de trabajo",
+      "Diseñar el tablero Kanban con clases de servicio y WIP"
+    ],
+    correctOrder: [0, 1, 2, 3],
+    explanation: "STATIK comienza entendiendo el dolor actual, luego demanda/capacidad, modela el flujo y finalmente diseña el tablero con políticas."
+  },
+  {
+    id: 49, topic: "STATIK Kanban", type: "true_false",
+    question: "STATIK recomienda analizar los tipos de trabajo y las fuentes de demanda antes de diseñar el tablero Kanban.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "STATIK enfatiza comprender el contexto (demanda, tipos de trabajo, capacidad, cuellos de botella) antes de diseñar la visualización.",
+    whyWrong: [null, "Es un principio fundamental de STATIK."]
+  },
+  {
+    id: 50, topic: "STATIK Kanban", type: "scenario",
+    scenario: "Un equipo quiere implementar Kanban. El consultor propone copiar el tablero de otro equipo sin analizar su propio flujo.",
+    question: "¿Por qué esto viola STATIK?",
+    options: [
+      "Porque cada tablero debe tener colores diferentes",
+      "Porque STATIK requiere entender el contexto específico: demanda, capacidad, flujo y cuellos de botella propios",
+      "Porque Kanban no usa tableros",
+      "Porque STATIK solo aplica a Scrum"
+    ],
+    correct: 1,
+    explanation: "STATIK es un enfoque sistémico que analiza el contexto único del equipo antes de diseñar el sistema Kanban. Copiar tableros ignora el análisis.",
+    whyWrong: [
+      "Los colores no son el problema.",
+      null,
+      "Kanban sí usa tableros.",
+      "STATIK es específico de Kanban."
+    ]
+  },
+  {
+    id: 51, topic: "STATIK Kanban", type: "multiple_choice",
+    question: "¿Cuál es el objetivo principal de STATIK?",
+    options: [
+      "Reemplazar Scrum con Kanban de inmediato",
+      "Diseñar un sistema Kanban adecuado al contexto del equipo mediante análisis sistémico",
+      "Eliminar todos los roles del equipo",
+      "Automatizar el pipeline de CI/CD"
+    ],
+    correct: 1,
+    explanation: "STATIK busca introducir Kanban de forma contextualizada, analizando el sistema de trabajo actual y diseñando mejoras evolutivas.",
+    whyWrong: [
+      "No es reemplazo inmediato de Scrum.",
+      null,
+      "No elimina roles.",
+      "CI/CD es tema de DevOps."
+    ]
+  },
+  {
+    id: 52, topic: "STATIK Kanban", type: "multiple_choice",
+    question: "En STATIK, ¿cómo se relaciona con TOC (Theory of Constraints)?",
+    options: [
+      "No tienen relación",
+      "STATIK usa TOC para identificar y gestionar cuellos de botella en el diseño del flujo",
+      "TOC reemplaza STATIK completamente",
+      "STATIK solo aplica cuando no hay restricciones"
+    ],
+    correct: 1,
+    explanation: "STATIK incorpora pensamiento sistémico y TOC para identificar restricciones/cuellos de botella al modelar el flujo y diseñar el tablero.",
+    whyWrong: [
+      "Sí se complementan.",
+      null,
+      "Son frameworks complementarios.",
+      "Precisamente identifica restricciones."
+    ]
+  },
+
+  // --- 8. SCRUMBAN (4) ---
+  {
+    id: 53, topic: "Scrumban", type: "multiple_choice",
+    question: "¿Qué es Scrumban?",
+    options: [
+      "Una certificación de Scrum.org",
+      "Un híbrido que combina la estructura de Scrum con el flujo pull y visualización de Kanban",
+      "Una variante de Kanban sin iteraciones",
+      "Un framework para gestión de proyectos de construcción"
+    ],
+    correct: 1,
+    explanation: "Scrumban combina roles/eventos de Scrum (o elementos selectos) con prácticas de Kanban: tablero visual, WIP limits, pull system y flujo continuo.",
+    whyWrong: [
+      "No es certificación oficial.",
+      null,
+      "Scrumban puede mantener cadencia de Sprints.",
+      "No es para construcción."
+    ]
+  },
+  {
+    id: 54, topic: "Scrumban", type: "scenario",
+    scenario: "Un equipo Scrum sufre interrupciones constantes de trabajo urgente entre Sprints. El Sprint Backlog se invalida frecuentemente.",
+    question: "¿Por qué Scrumban podría ser adecuado?",
+    options: [
+      "Porque elimina la necesidad de planificación",
+      "Porque permite flujo continuo con WIP limits y clases de servicio para manejar urgencias sin destruir el Sprint",
+      "Porque remueve al Product Owner",
+      "Porque prohíbe retrospectivas"
+    ],
+    correct: 1,
+    explanation: "Scrumban maneja mejor entornos con demanda variable mediante pull, clases de servicio (Expedite) y flujo continuo, manteniendo cadencia de planificación/revisión.",
+    whyWrong: [
+      "Scrumban mantiene planificación periódica.",
+      null,
+      "No elimina al PO.",
+      "Las retrospectivas se mantienen."
+    ]
+  },
+  {
+    id: 55, topic: "Scrumban", type: "true_false",
+    question: "Scrumban típicamente elimina el Sprint Backlog fijo y usa un backlog continuo con replenishment meetings.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Scrumban reemplaza el Sprint Backlog rígido por un sistema de reposición continua (on-demand replenishment) cuando hay capacidad disponible.",
+    whyWrong: [null, "Es una característica distintiva de Scrumban."]
+  },
+  {
+    id: 56, topic: "Scrumban", type: "multiple_choice",
+    question: "¿Cuándo es preferible Scrumban sobre Scrum puro?",
+    options: [
+      "Cuando el equipo nunca ha usado ágil",
+      "Cuando hay alta variabilidad en el trabajo y necesidad de flujo continuo con interrupciones frecuentes",
+      "Cuando se requiere certificación PSM",
+      "Cuando no se necesita visualización del trabajo"
+    ],
+    correct: 1,
+    explanation: "Scrumban brilla con trabajo de mantenimiento, soporte, o entornos con demanda impredecible donde Sprints rígidos generan fricción.",
+    whyWrong: [
+      "Equipos nuevos suelen empezar con Scrum puro.",
+      null,
+      "La certificación no determina el framework.",
+      "Scrumban requiere visualización Kanban."
+    ]
+  },
+
+  // --- 9. TOC (5) ---
+  {
+    id: 57, topic: "TOC", type: "order",
+    question: "Ordena los 5 pasos de Focusing de la Theory of Constraints (TOC):",
+    items: [
+      "Elevar la restricción",
+      "Identificar la restricción del sistema",
+      "Decidir cómo explotar la restricción",
+      "Subordinar todo lo demás a la decisión anterior",
+      "Si la restricción se rompe, volver al paso 1 (no permitir inercia)"
+    ],
+    correctOrder: [1, 2, 3, 0, 4],
+    explanation: "TOC 5 pasos: 1) Identificar, 2) Explotar, 3) Subordinar, 4) Elevar, 5) Repetir (no permitir inercia)."
+  },
+  {
+    id: 58, topic: "TOC", type: "scenario",
+    scenario: "En un pipeline de desarrollo, QA es el cuello de botella: 2 testers procesan 5 items/día mientras Dev entrega 15 items/día.",
+    question: "Según TOC, ¿cuál es la acción correcta inicial?",
+    options: [
+      "Contratar más desarrolladores",
+      "Identificar QA como restricción y asegurar que trabaje solo en lo que aporta valor, subordinando Dev a su capacidad",
+      "Aumentar WIP en QA para que procesen más",
+      "Eliminar QA del proceso"
+    ],
+    correct: 1,
+    explanation: "TOC: identificar la restricción (QA), explotarla (que no pierda tiempo en no-valor), subordinar (Dev produce al ritmo de QA), luego elevar capacidad si necesario.",
+    whyWrong: [
+      "Más Dev empeora el cuello de botella.",
+      null,
+      "Más WIP en QA aumenta Lead Time sin resolver.",
+      "Eliminar QA compromete calidad."
+    ]
+  },
+  {
+    id: 59, topic: "TOC", type: "multiple_choice",
+    question: "En TOC, ¿qué significa 'subordinar' al resto del sistema?",
+    options: [
+      "Ignorar la restricción",
+      "Alinear todas las demás actividades para maximizar el throughput de la restricción",
+      "Dar prioridad a todos los departamentos por igual",
+      "Reducir la calidad para ir más rápido"
+    ],
+    correct: 1,
+    explanation: "Subordinar significa que todo el sistema se alinea para servir a la restricción. Producir más de lo que la restricción puede procesar genera inventario/WIP desperdiciado.",
+    whyWrong: [
+      "Es lo opuesto: enfocarse en la restricción.",
+      null,
+      "No es igualdad; es alineación a la restricción.",
+      "No se sacrifica calidad."
+    ]
+  },
+  {
+    id: 60, topic: "TOC", type: "fill_blank",
+    question: "En TOC, el recurso que limita el throughput del sistema completo se llama ___",
+    correct: "restricción",
+    accept: ["restricción", "restriccion", "cuello de botella", "constraint"],
+    explanation: "La restricción (constraint) es el eslabón más débil que determina la capacidad del sistema completo."
+  },
+  {
+    id: 61, topic: "TOC", type: "true_false",
+    question: "Según TOC, optimizar un eslabón que no es la restricción no mejora el throughput del sistema.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Goldratt demostró que una cadena es tan fuerte como su eslabón más débil. Mejorar lo que no es restricción no aumenta el output del sistema.",
+    whyWrong: [null, "Es el principio fundamental de TOC."]
+  },
+
+  // --- 10. DEVOPS (10) ---
+  {
+    id: 62, topic: "DevOps", type: "multiple_choice",
+    question: "¿Cuál es el objetivo principal de DevOps?",
+    options: [
+      "Eliminar el departamento de operaciones",
+      "Acelerar la entrega de valor mediante colaboración entre desarrollo y operaciones, automatización y feedback continuo",
+      "Reemplazar Scrum con un nuevo framework",
+      "Solo automatizar deployments"
+    ],
+    correct: 1,
+    explanation: "DevOps busca reducir el ciclo de entrega, mejorar calidad y crear cultura de colaboración entre Dev y Ops mediante automatización, CI/CD y observabilidad.",
+    whyWrong: [
+      "No elimina Ops; los integra.",
+      null,
+      "DevOps complementa, no reemplaza Scrum.",
+      "Es mucho más que solo deploy."
+    ]
+  },
+  {
+    id: 63, topic: "DevOps", type: "multiple_choice",
+    question: "¿Qué pilar de DevOps se refiere a métricas, logs y trazas para entender el comportamiento del sistema en producción?",
+    options: ["Cultura", "Automatización", "Medición", "Observabilidad"],
+    correct: 3,
+    explanation: "Observabilidad (logs, métricas, traces) permite entender el estado interno del sistema en producción. Es esencial para feedback rápido y resolución de incidentes.",
+    whyWrong: [
+      "Cultura es colaboración y confianza.",
+      "Automatización es pipelines y tooling.",
+      "Medición es amplio; observabilidad es el término específico.",
+      null
+    ]
+  },
+  {
+    id: 64, topic: "DevOps", type: "scenario",
+    scenario: "Un equipo despliega 20 veces al día pero tarda 4 horas en detectar y diagnosticar fallos en producción.",
+    question: "¿Qué área de DevOps necesita mejorar prioritariamente?",
+    options: [
+      "CI/CD — necesitan desplegar más rápido",
+      "Observabilidad y monitoreo — detectar y diagnosticar fallos rápidamente",
+      "Eliminar testing para acelerar",
+      "Contratar más Product Owners"
+    ],
+    correct: 1,
+    explanation: "Desplegar rápido sin detectar fallos es riesgoso. La observabilidad (monitoring, alerting, logging, tracing) es crítica para MTTR bajo.",
+    whyWrong: [
+      "Ya despliegan frecuentemente; el problema es detección.",
+      null,
+      "Eliminar testing empeora calidad.",
+      "PO no resuelve problemas operacionales."
+    ]
+  },
+  {
+    id: 65, topic: "DevOps", type: "true_false",
+    question: "DevOps es principalmente una cultura que promueve responsabilidad compartida del ciclo de vida completo del software ('You build it, you run it').",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "DevOps comienza con cultura: colaboración, responsabilidad compartida, experimentación y aprendizaje. Las herramientas habilitan pero no definen DevOps.",
+    whyWrong: [null, "La cultura es el fundamento de DevOps."]
+  },
+  {
+    id: 66, topic: "DevOps", type: "multiple_choice",
+    question: "¿Cuál de estos KPIs es más relevante para medir la estabilidad en DevOps (DORA metrics)?",
+    options: [
+      "Número de reuniones por semana",
+      "Mean Time To Recovery (MTTR)",
+      "Cantidad de documentos generados",
+      "Tamaño del equipo"
+    ],
+    correct: 1,
+    explanation: "DORA metrics incluyen: Deployment Frequency, Lead Time for Changes, Change Failure Rate, y MTTR. MTTR mide qué tan rápido se recupera el equipo de fallos.",
+    whyWrong: [
+      "Reuniones no miden estabilidad.",
+      null,
+      "Documentación no es KPI de DevOps.",
+      "Tamaño del equipo no es métrica DORA."
+    ]
+  },
+  {
+    id: 67, topic: "DevOps", type: "multiple_choice",
+    question: "En el contexto DevOps, ¿qué diferencia hay entre Infraestructura como Código (IaC) y configuración manual?",
+    options: [
+      "No hay diferencia práctica",
+      "IaC permite versionar, reproducir y auditar infraestructura de forma automatizada y consistente",
+      "IaC solo aplica a bases de datos",
+      "La configuración manual es siempre más segura"
+    ],
+    correct: 1,
+    explanation: "IaC (Terraform, Ansible, CloudFormation) trata infraestructura como software: versionable, testeable, reproducible y automatizable.",
+    whyWrong: [
+      "Hay diferencias significativas.",
+      null,
+      "IaC aplica a toda la infraestructura.",
+      "Manual es propenso a errores y drift."
+    ]
+  },
+  {
+    id: 68, topic: "DevOps", type: "fill_blank",
+    question: "La práctica de integrar cambios de código frecuentemente en un repositorio compartido se llama Integración ___",
+    correct: "Continua",
+    accept: ["continua", "continua (ci)", "continuous", "CI"],
+    explanation: "Integración Continua (CI) es la práctica de integrar cambios frecuentemente con verificación automática mediante builds y tests."
+  },
+  {
+    id: 69, topic: "DevOps", type: "multiple_choice",
+    question: "¿Qué rol cumplen las alertas en un sistema DevOps?",
+    options: [
+      "Decorar el dashboard de monitoreo",
+      "Notificar proactivamente cuando métricas superan umbrales para permitir respuesta rápida",
+      "Reemplazar los logs",
+      "Eliminar la necesidad de on-call"
+    ],
+    correct: 1,
+    explanation: "Las alertas convierten métricas en acción: notifican al equipo cuando algo requiere atención, reduciendo tiempo de detección.",
+    whyWrong: [
+      "Tienen propósito operacional crítico.",
+      null,
+      "Complementan logs, no los reemplazan.",
+      "On-call sigue siendo necesario."
+    ]
+  },
+  {
+    id: 70, topic: "DevOps", type: "scenario",
+    scenario: "Dev y Ops trabajan en silos. Dev 'lanza código por encima del muro' y Ops lo recibe sin contexto. Los deploys fallan frecuentemente.",
+    question: "¿Qué principio DevOps aborda directamente este problema?",
+    options: [
+      "Comprar más servidores",
+      "Romper silos con colaboración, responsabilidad compartida y feedback loops entre Dev y Ops",
+      "Eliminar el equipo de Ops",
+      "Documentar más extensamente sin cambiar procesos"
+    ],
+    correct: 1,
+    explanation: "DevOps elimina el 'wall of confusion' promoviendo equipos multidisciplinarios, responsabilidad compartida del ciclo completo y comunicación continua.",
+    whyWrong: [
+      "Más servidores no resuelve silos.",
+      null,
+      "No elimina Ops; los integra.",
+      "Más documentación sin colaboración no resuelve el problema."
+    ]
+  },
+  {
+    id: 71, topic: "DevOps", type: "multiple_choice",
+    question: "¿Qué es el 'Change Failure Rate' en métricas DORA?",
+    options: [
+      "Porcentaje de cambios que resultan en degradación o fallo en producción",
+      "Número de cambios rechazados en code review",
+      "Tasa de rotación del equipo",
+      "Porcentaje de tests que fallan en CI"
+    ],
+    correct: 0,
+    explanation: "Change Failure Rate = % de deployments que causan fallo en producción (incidente, rollback, hotfix). Mide estabilidad del proceso de entrega.",
+    whyWrong: [
+      null,
+      "Code review rejections no es esta métrica.",
+      "Rotación es métrica de RRHH.",
+      "Test failures en CI es diferente."
+    ]
+  },
+
+  // --- 11. CI/CD (6) ---
+  {
+    id: 72, topic: "CI/CD", type: "multiple_choice",
+    question: "¿Cuál es la diferencia principal entre CI y CD (Continuous Delivery)?",
+    options: [
+      "Son lo mismo",
+      "CI integra y testea automáticamente; CD asegura que el software esté siempre en estado desplegable",
+      "CI es para frontend; CD es para backend",
+      "CD ocurre antes de CI"
+    ],
+    correct: 1,
+    explanation: "CI: integrar código frecuentemente con build/test automático. CD (Delivery): mantener artefacto siempre listo para producción. CD (Deployment) va un paso más: despliegue automático.",
+    whyWrong: [
+      "Son prácticas distintas pero complementarias.",
+      null,
+      "Aplican a todo el stack.",
+      "CI precede a CD."
+    ]
+  },
+  {
+    id: 73, topic: "CI/CD", type: "order",
+    question: "Ordena las etapas típicas de un pipeline CI/CD:",
+    items: ["Deploy a staging/producción", "Build/Compilación", "Tests automatizados", "Commit/Push al repositorio"],
+    correctOrder: [3, 1, 2, 0],
+    explanation: "Pipeline típico: Commit → Build → Test → Deploy. Cada etapa debe pasar antes de continuar."
+  },
+  {
+    id: 74, topic: "CI/CD", type: "scenario",
+    scenario: "Un deploy a producción introduce un bug crítico. El equipo necesita volver a la versión anterior rápidamente.",
+    question: "¿Qué capacidad del pipeline es esencial aquí?",
+    options: [
+      "Rollback automatizado o manual rápido a versión anterior conocida como estable",
+      "Eliminar el pipeline y desplegar manualmente",
+      "Esperar al siguiente Sprint para corregir",
+      "Desactivar todos los tests"
+    ],
+    correct: 0,
+    explanation: "Rollback es capacidad crítica de CD: revertir rápidamente a versión estable minimiza impacto. Requiere versionado de artefactos y estrategia de deployment.",
+    whyWrong: [
+      null,
+      "Deploy manual es más lento y riesgoso.",
+      "Esperar agrava el incidente.",
+      "Desactivar tests empeora el problema."
+    ]
+  },
+  {
+    id: 75, topic: "CI/CD", type: "true_false",
+    question: "GitHub Actions, Jenkins y GitLab CI son herramientas que permiten automatizar pipelines de CI/CD.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Son plataformas populares de CI/CD que automatizan build, test, deploy y otras etapas del pipeline.",
+    whyWrong: [null, "Son herramientas estándar de la industria."]
+  },
+  {
+    id: 76, topic: "CI/CD", type: "multiple_choice",
+    question: "¿Qué ventaja principal ofrece la automatización en un pipeline CI/CD?",
+    options: [
+      "Elimina la necesidad de desarrolladores",
+      "Consistencia, velocidad y reducción de errores humanos en procesos repetitivos",
+      "Garantiza que no habrá bugs en producción",
+      "Reemplaza la necesidad de code review"
+    ],
+    correct: 1,
+    explanation: "La automatización ejecuta build, test y deploy de forma consistente y rápida, eliminando errores manuales y liberando tiempo del equipo.",
+    whyWrong: [
+      "Los desarrolladores siguen siendo esenciales.",
+      null,
+      "No garantiza cero bugs.",
+      "Code review sigue siendo importante."
+    ]
+  },
+  {
+    id: 77, topic: "CI/CD", type: "fill_blank",
+    question: "La práctica de desplegar automáticamente cada cambio que pasa los tests a producción se llama Continuous ___",
+    correct: "Deployment",
+    accept: ["deployment", "deploy", "despliegue", "despliegue continuo"],
+    explanation: "Continuous Deployment va más allá de Delivery: cada cambio que pasa el pipeline se despliega automáticamente a producción sin intervención manual."
+  },
+
+  // --- 12. TESTING (8) ---
+  {
+    id: 78, topic: "Testing", type: "multiple_choice",
+    question: "En TDD (Test Driven Development), ¿cuál es el orden correcto del ciclo Red-Green-Refactor?",
+    options: [
+      "Escribir código → Escribir test → Refactorizar",
+      "Escribir test que falla → Escribir código mínimo que pasa → Refactorizar",
+      "Refactorizar → Escribir test → Escribir código",
+      "Escribir test → Desplegar → Refactorizar"
+    ],
+    correct: 1,
+    explanation: "TDD: Red (test que falla) → Green (código mínimo para pasar) → Refactor (mejorar sin cambiar comportamiento).",
+    whyWrong: [
+      "En TDD el test va primero.",
+      null,
+      "Refactorizar va al final.",
+      "Deploy no es parte del ciclo TDD."
+    ]
+  },
+  {
+    id: 79, topic: "Testing", type: "multiple_choice",
+    question: "¿Cuál es la diferencia principal entre TDD y BDD?",
+    options: [
+      "No hay diferencia",
+      "TDD se enfoca en tests técnicos a nivel de código; BDD describe comportamiento en lenguaje de negocio con escenarios Given-When-Then",
+      "BDD no usa tests automatizados",
+      "TDD solo aplica a frontend"
+    ],
+    correct: 1,
+    explanation: "TDD escribe tests unitarios antes del código. BDD define comportamiento esperado en lenguaje comprensible (Given-When-Then) que luego se automatiza.",
+    whyWrong: [
+      "Tienen enfoques distintos.",
+      null,
+      "BDD sí se automatiza (Cucumber, SpecFlow).",
+      "TDD aplica a todo el stack."
+    ]
+  },
+  {
+    id: 80, topic: "Testing", type: "match",
+    question: "Relaciona cada tipo de testing con su nivel:",
+    left: ["Unit Testing", "Integration Testing", "Acceptance Testing"],
+    right: [
+      "Valida que el sistema cumple requisitos de negocio desde perspectiva del usuario",
+      "Verifica interacción entre componentes/módulos",
+      "Prueba una unidad aislada de código (función, clase)"
+    ],
+    correctPairs: [2, 1, 0],
+    explanation: "Unit = unidad aislada; Integration = entre componentes; Acceptance = requisitos de negocio/usuario."
+  },
+  {
+    id: 81, topic: "Testing", type: "scenario",
+    scenario: "Un equipo escribe historias de usuario pero los tests de aceptación se escriben después de implementar, causando malentendidos sobre requisitos.",
+    question: "¿Qué práctica resolvería esto?",
+    options: [
+      "Eliminar tests de aceptación",
+      "ATDD: definir criterios de aceptación y tests antes de la implementación, con participación del PO y stakeholders",
+      "Solo usar tests unitarios",
+      "Postponer testing al release"
+    ],
+    correct: 1,
+    explanation: "ATDD (Acceptance Test Driven Development) define tests de aceptación colaborativamente ANTES de implementar, alineando Dev, PO y stakeholders.",
+    whyWrong: [
+      "Eliminar tests empeora calidad.",
+      null,
+      "Unit tests no cubren requisitos de negocio.",
+      "Postponer testing es anti-ágil."
+    ]
+  },
+  {
+    id: 82, topic: "Testing", type: "fill_blank",
+    question: "En BDD, el formato de escenario usa las palabras Given, When y ___",
+    correct: "Then",
+    accept: ["then", "Entonces"],
+    explanation: "Given (contexto/precondición) → When (acción) → Then (resultado esperado). Es el formato estándar de escenarios BDD."
+  },
+  {
+    id: 83, topic: "Testing", type: "true_false",
+    question: "ATDD involucra al Product Owner y stakeholders en la definición de criterios de aceptación antes del desarrollo.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "ATDD es colaborativo: PO, Dev y stakeholders definen juntos los tests de aceptación que guían el desarrollo.",
+    whyWrong: [null, "La colaboración es esencial en ATDD."]
+  },
+  {
+    id: 84, topic: "Testing", type: "multiple_choice",
+    question: "¿Qué nivel de testing verifica que dos microservicios se comunican correctamente vía API?",
+    options: [
+      "Unit Testing",
+      "Integration Testing",
+      "Acceptance Testing solamente",
+      "No se necesita testing"
+    ],
+    correct: 1,
+    explanation: "La comunicación entre microservicios es integration testing: verifica que componentes integrados funcionan juntos correctamente.",
+    whyWrong: [
+      "Unit test probaría cada servicio aislado.",
+      null,
+      "Acceptance es nivel de negocio, no de integración técnica.",
+      "Siempre se necesita testing de integración."
+    ]
+  },
+  {
+    id: 85, topic: "Testing", type: "multiple_choice",
+    question: "En un escenario BDD: 'Given un usuario autenticado, When agrega un producto al carrito, Then el carrito muestra 1 item'. ¿Qué representa 'When'?",
+    options: [
+      "El resultado esperado",
+      "La acción o evento que desencadena el comportamiento",
+      "El contexto inicial",
+      "El test unitario"
+    ],
+    correct: 1,
+    explanation: "When describe la acción o evento. Given = contexto, When = acción, Then = resultado verificable.",
+    whyWrong: [
+      "Eso es Then.",
+      null,
+      "Eso es Given.",
+      "Es un escenario, no específicamente unit test."
+    ]
+  },
+
+  // --- 13. DEFINITION OF DONE (4) ---
+  {
+    id: 86, topic: "Definition of Done", type: "multiple_choice",
+    question: "¿Qué es la Definition of Done (DoD) en Scrum?",
+    options: [
+      "Una lista de deseos del Product Owner",
+      "Un acuerdo compartido sobre los criterios que debe cumplir un PBI para considerarse completado e integrado al Incremento",
+      "Lo mismo que los criterios de aceptación de una historia",
+      "Un documento que solo aplica al último Sprint"
+    ],
+    correct: 1,
+    explanation: "DoD es el estándar de calidad transversal del equipo: código revisado, tests pasando, documentación, deploy, etc. Aplica a todos los PBIs.",
+    whyWrong: [
+      "DoD es acuerdo del equipo, no deseos del PO.",
+      null,
+      "Criterios de aceptación son por historia; DoD es transversal.",
+      "DoD aplica a cada Sprint."
+    ]
+  },
+  {
+    id: 87, topic: "Definition of Done", type: "scenario",
+    scenario: "El equipo define DoD que incluye: código revisado, tests unitarios >80% cobertura, tests de integración, desplegado en staging. Una historia cumple criterios de aceptación pero no tiene tests de integración.",
+    question: "¿Puede incluirse en el Incremento?",
+    options: [
+      "Sí, porque cumple criterios de aceptación",
+      "No, porque no cumple la Definition of Done del equipo",
+      "Sí, si el PO lo aprueba verbalmente",
+      "Solo si es un Spike"
+    ],
+    correct: 1,
+    explanation: "Un PBI solo puede incluirse en el Incremento si cumple la DoD. Criterios de aceptación + DoD deben cumplirse ambos.",
+    whyWrong: [
+      "Criterios de aceptación no sustituyen DoD.",
+      null,
+      "Aprobación verbal no reemplaza DoD.",
+      "Spikes tienen su propia definición de completitud."
+    ]
+  },
+  {
+    id: 88, topic: "Definition of Done", type: "true_false",
+    question: "La Definition of Done puede incluir prácticas como TDD, BDD y ATDD como criterios técnicos del equipo.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "Equipos maduros incluyen en su DoD prácticas de calidad: TDD, cobertura mínima, BDD scenarios pasando, code review, etc.",
+    whyWrong: [null, "Es una práctica común en equipos ágiles maduros."]
+  },
+  {
+    id: 89, topic: "Definition of Done", type: "multiple_choice",
+    question: "¿Quién es responsable de definir y mejorar la Definition of Done?",
+    options: [
+      "Solo el Scrum Master",
+      "El equipo de Scrum completo (Developers, con acuerdo del PO y SM)",
+      "Solo el gerente de proyecto",
+      "El cliente externo exclusivamente"
+    ],
+    correct: 1,
+    explanation: "La DoD es un acuerdo del equipo Scrum. Los Developers la definen y mejoran, alineados con estándares de la organización.",
+    whyWrong: [
+      "SM facilita pero no define solo.",
+      null,
+      "No hay gerente de proyecto en Scrum.",
+      "El cliente da feedback pero el equipo define DoD."
+    ]
+  },
+
+  // --- 14. DEFINITION OF READY (4) ---
+  {
+    id: 90, topic: "Definition of Ready", type: "multiple_choice",
+    question: "¿Qué es la Definition of Ready (DoR)?",
+    options: [
+      "Criterios que un PBI debe cumplir antes de entrar a un Sprint",
+      "Lo mismo que Definition of Done",
+      "Un documento de arquitectura",
+      "La lista de bugs pendientes"
+    ],
+    correct: 0,
+    explanation: "DoR define cuándo una historia está suficientemente preparada para ser trabajada en un Sprint: clara, estimada, con criterios de aceptación, sin dependencias bloqueantes.",
+    whyWrong: [
+      null,
+      "DoD es al completar; DoR es al iniciar.",
+      "No es documento de arquitectura.",
+      "No es lista de bugs."
+    ]
+  },
+  {
+    id: 91, topic: "Definition of Ready", type: "scenario",
+    scenario: "En Sprint Planning, el equipo intenta comprometer una historia sin criterios de aceptación, sin estimar y con dependencia externa no resuelta.",
+    question: "¿Qué indica la DoR en este caso?",
+    options: [
+      "La historia está lista para el Sprint",
+      "La historia NO cumple DoR y debería refinarse antes de comprometerse",
+      "DoR no aplica en Sprint Planning",
+      "El SM debe estimar por el equipo"
+    ],
+    correct: 1,
+    explanation: "DoR típicamente requiere: criterios de aceptación claros, estimación, dependencias resueltas, historia entendida por el equipo. Esta historia no está lista.",
+    whyWrong: [
+      "Faltan elementos clave de preparación.",
+      null,
+      "DoR se verifica precisamente en planning.",
+      "El equipo estima, no el SM."
+    ]
+  },
+  {
+    id: 92, topic: "Definition of Ready", type: "multiple_choice",
+    question: "¿En qué actividad se aplica principalmente la Definition of Ready?",
+    options: [
+      "Sprint Retrospective",
+      "Backlog Refinement y Sprint Planning",
+      "Daily Scrum",
+      "Sprint Review"
+    ],
+    correct: 1,
+    explanation: "DoR se verifica durante refinamiento (preparar historias) y Sprint Planning (antes de comprometerse). Asegura calidad del input al Sprint.",
+    whyWrong: [
+      "Retro mejora procesos, no verifica DoR.",
+      null,
+      "Daily es sincronización diaria.",
+      "Review inspecciona incremento."
+    ]
+  },
+  {
+    id: 93, topic: "Definition of Ready", type: "true_false",
+    question: "La Definition of Ready es un requisito obligatorio del framework Scrum según la Guía Scrum 2020.",
+    options: ["Verdadero", "Falso"],
+    correct: 1,
+    explanation: "DoR NO es parte oficial del framework Scrum. Es una práctica complementaria que muchos equipos adoptan. Solo DoD es mencionada en la Guía Scrum.",
+    whyWrong: ["DoR es práctica común pero no artefacto oficial de Scrum.", null]
+  },
+
+  // --- 15. FLUJO LSU (7) ---
+  {
+    id: 94, topic: "Flujo LSU", type: "order",
+    question: "Ordena las fases del flujo LSU del proyecto:",
+    items: ["Control", "Inicio", "Ejecución", "Mejora", "Planificación"],
+    correctOrder: [1, 4, 2, 0, 3],
+    explanation: "Flujo LSU: Inicio → Planificación → Ejecución → Control → Mejora. Ciclo de gestión del proyecto ágil."
+  },
+  {
+    id: 95, topic: "Flujo LSU", type: "match",
+    question: "Relaciona cada fase LSU con sus prácticas principales:",
+    left: ["Inicio", "Ejecución", "Control", "Mejora"],
+    right: [
+      "STATIK Kanban, Lead Time, Cycle Time, Throughput, KPIs",
+      "Lean Inception, MVP, Pentágono del MVP, Historias de Usuario",
+      "Kanban, DevOps, TDD, BDD, ATDD",
+      "Scrumban, Kaizen, TOC, Retrospectiva"
+    ],
+    correctPairs: [1, 2, 0, 3],
+    explanation: "Inicio=Lean Inception/MVP; Ejecución=Kanban/DevOps/Testing; Control=STATIK/métricas; Mejora=Scrumban/Kaizen/TOC/Retro."
+  },
+  {
+    id: 96, topic: "Flujo LSU", type: "multiple_choice",
+    question: "En la fase de Planificación del flujo LSU, ¿qué prácticas son centrales?",
+    options: [
+      "Retrospectiva y Kaizen",
+      "Sprint Planning, Roadmap, Definition of Ready",
+      "STATIK Kanban y Throughput",
+      "Pivotar y Aprendizaje Validado"
+    ],
+    correct: 1,
+    explanation: "Planificación LSU incluye: Sprint Planning, Roadmap, DoR — preparar y comprometer el trabajo del ciclo.",
+    whyWrong: [
+      "Retro/Kaizen son de Mejora.",
+      null,
+      "STATIK/Throughput son de Control.",
+      "Pivotar es Lean Startup (Inicio)."
+    ]
+  },
+  {
+    id: 97, topic: "Flujo LSU", type: "scenario",
+    scenario: "El proyecto completó 3 Sprints. El Lead Time aumentó, el throughput bajó y los retros no generan acciones concretas.",
+    question: "¿En qué fase del flujo LSU debe actuar el equipo prioritariamente?",
+    options: [
+      "Inicio — rehacer Lean Inception",
+      "Control — analizar métricas de flujo; Mejora — aplicar Kaizen, TOC y retrospectivas efectivas",
+      "Solo Ejecución — trabajar más horas",
+      "Eliminar Kanban"
+    ],
+    correct: 1,
+    explanation: "Métricas degradadas = fase Control (analizar Lead Time, throughput). Retros sin acción = fase Mejora (Kaizen, TOC, retrospectivas efectivas).",
+    whyWrong: [
+      "Inicio ya pasó; el problema es operacional.",
+      null,
+      "Más horas no resuelve problemas de flujo.",
+      "Eliminar Kanban quita visibilidad."
+    ]
+  },
+  {
+    id: 98, topic: "Flujo LSU", type: "multiple_choice",
+    question: "¿Qué es Kaizen en el contexto del flujo LSU?",
+    options: [
+      "Un framework que reemplaza Scrum",
+      "Mejora continua incremental — filosofía de pequeños cambios constantes",
+      "Una herramienta de CI/CD",
+      "Un tipo de estimación"
+    ],
+    correct: 1,
+    explanation: "Kaizen (del Lean) es mejora continua incremental. En LSU se aplica en la fase de Mejora junto con retros, TOC y Scrumban.",
+    whyWrong: [
+      "No reemplaza Scrum; lo complementa.",
+      null,
+      "No es herramienta de CI/CD.",
+      "No es técnica de estimación."
+    ]
+  },
+  {
+    id: 99, topic: "Flujo LSU", type: "true_false",
+    question: "En la fase de Inicio del flujo LSU se realizan actividades como identificación de requisitos, historias de usuario y Lean Inception.",
+    options: ["Verdadero", "Falso"],
+    correct: 0,
+    explanation: "La fase Inicio incluye: identificación de requisitos, historias de usuario, backlog inicial, Lean Inception, definición de MVP y Pentágono del MVP.",
+    whyWrong: [null, "Es la definición correcta de la fase Inicio."]
+  },
+  {
+    id: 100, topic: "Flujo LSU", type: "scenario",
+    scenario: "Un equipo nuevo inicia un proyecto. Tienen una idea de producto pero no han definido personas, MVP ni backlog priorizado. Quieren ir directo al Sprint Planning.",
+    question: "Según el flujo LSU, ¿qué deberían hacer primero?",
+    options: [
+      "Sprint Planning inmediato con historias inventadas en la reunión",
+      "Fase de Inicio: Lean Inception, definir visión, personas, MVP, pentágono y crear backlog inicial con historias",
+      "Implementar CI/CD antes de definir el producto",
+      "Saltar directo a la fase de Mejora"
+    ],
+    correct: 1,
+    explanation: "LSU establece que antes de planificar/ejecutar se necesita Inicio: entender el problema, definir MVP, personas, y tener backlog preparado con historias de usuario.",
+    whyWrong: [
+      "Planning sin preparación viola DoR y genera desperdicio.",
+      null,
+      "CI/CD sin producto definido es prematuro.",
+      "No se puede mejorar lo que no se ha iniciado."
+    ]
+  }
+];
+
+</script>
+  <script>
+    // ============================================================
+    // SIMULADOR PROFESIONAL — LÓGICA DE APLICACIÓN
+    // ============================================================
+
+    const App = {
+      mode: 'exam',
+      currentIndex: 0,
+      answers: {},
+      reviewFlags: {},
+      startTime: null,
+      timerInterval: null,
+      shuffledQuestions: [],
+
+      init() {
+        this.renderTopicsPreview();
+        document.getElementById('btn-start').addEventListener('click', () => this.startExam());
+        document.getElementById('btn-prev').addEventListener('click', () => this.navigate(-1));
+        document.getElementById('btn-next').addEventListener('click', () => this.navigate(1));
+        document.getElementById('btn-finish').addEventListener('click', () => this.confirmFinish());
+        document.getElementById('btn-restart').addEventListener('click', () => this.restart());
+      },
+
+      renderTopicsPreview() {
+        const topics = [...new Set(QUESTIONS_BANK.map(q => q.topic))];
+        document.getElementById('topics-preview').innerHTML =
+          topics.map(t => `<div class="topic-tag">${t}</div>`).join('');
+      },
+
+      startExam() {
+        this.mode = document.querySelector('input[name="mode"]:checked').value;
+        this.currentIndex = 0;
+        this.answers = {};
+        this.reviewFlags = {};
+        this.startTime = Date.now();
+        this.shuffledQuestions = this.shuffleArray([...QUESTIONS_BANK]);
+        this.showScreen('screen-exam');
+        document.getElementById('mode-badge').textContent =
+          this.mode === 'exam' ? 'Modo Examen' : 'Modo Estudio';
+        this.startTimer();
+        this.renderNavDots();
+        this.renderQuestion();
+      },
+
+      shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      },
+
+      startTimer() {
+        clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+          const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+          const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+          const s = String(elapsed % 60).padStart(2, '0');
+          document.getElementById('timer').textContent = `${h}:${m}:${s}`;
+        }, 1000);
+      },
+
+      getElapsedTime() {
+        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+        const h = Math.floor(elapsed / 3600);
+        const m = Math.floor((elapsed % 3600) / 60);
+        const s = elapsed % 60;
+        return `${h}h ${m}m ${s}s`;
+      },
+
+      showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+      },
+
+      navigate(dir) {
+        const newIndex = this.currentIndex + dir;
+        if (newIndex >= 0 && newIndex < this.shuffledQuestions.length) {
+          this.currentIndex = newIndex;
+          this.renderQuestion();
+        }
+      },
+
+      goToQuestion(index) {
+        this.currentIndex = index;
+        this.renderQuestion();
+      },
+
+      renderNavDots() {
+        const container = document.getElementById('nav-dots');
+        container.innerHTML = this.shuffledQuestions.map((q, i) => {
+          let cls = 'nav-dot';
+          if (i === this.currentIndex) cls += ' current';
+          if (this.answers[q.id] !== undefined) cls += ' answered';
+          if (this.reviewFlags[q.id]) cls += ' review';
+          return `<div class="${cls}" data-index="${i}">${i + 1}</div>`;
+        }).join('');
+        container.querySelectorAll('.nav-dot').forEach(dot => {
+          dot.addEventListener('click', () => this.goToQuestion(+dot.dataset.index));
+        });
+      },
+
+      updateProgress() {
+        const total = this.shuffledQuestions.length;
+        const answered = Object.keys(this.answers).length;
+        const pct = Math.round((this.currentIndex + 1) / total * 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('progress-text').textContent = pct + '%';
+        document.getElementById('answered-count').textContent = `${answered} respondidas`;
+        document.getElementById('q-current').textContent = this.currentIndex + 1;
+      },
+
+      getTypeLabel(type) {
+        const labels = {
+          multiple_choice: 'Opción múltiple',
+          true_false: 'Verdadero / Falso',
+          fill_blank: 'Completar',
+          order: 'Ordenar pasos',
+          match: 'Relacionar',
+          scenario: 'Caso práctico'
+        };
+        return labels[type] || type;
+      },
+
+      renderQuestion() {
+        const q = this.shuffledQuestions[this.currentIndex];
+        const card = document.getElementById('question-card');
+        let html = `
+          <span class="question-topic">${q.topic}</span>
+          <span class="question-type-badge">${this.getTypeLabel(q.type)}</span>
+        `;
+        if (q.scenario) {
+          html += `<div class="scenario-box">${q.scenario}</div>`;
+        }
+        html += `<div class="question-text">${q.question}</div>`;
+        html += `<div id="answer-area">${this.renderAnswerArea(q)}</div>`;
+        html += `
+          <label class="review-flag">
+            <input type="checkbox" id="review-check" ${this.reviewFlags[q.id] ? 'checked' : ''}>
+            Marcar para revisar
+          </label>
+        `;
+        html += `<div id="study-explanation"></div>`;
+        card.innerHTML = html;
+
+        document.getElementById('review-check').addEventListener('change', (e) => {
+          this.reviewFlags[q.id] = e.target.checked;
+          this.renderNavDots();
+        });
+
+        this.attachAnswerListeners(q);
+        this.updateProgress();
+        this.renderNavDots();
+
+        document.getElementById('btn-prev').disabled = this.currentIndex === 0;
+        document.getElementById('btn-next').disabled =
+          this.currentIndex === this.shuffledQuestions.length - 1;
+
+        if (this.mode === 'study' && this.answers[q.id] !== undefined) {
+          this.showStudyExplanation(q);
+        }
+      },
+
+      renderAnswerArea(q) {
+        switch (q.type) {
+          case 'multiple_choice':
+          case 'scenario':
+          case 'true_false':
+            return this.renderOptions(q);
+          case 'fill_blank':
+            return `<input type="text" class="fill-input" id="fill-answer"
+              placeholder="Escribe tu respuesta..."
+              value="${this.answers[q.id] || ''}">`;
+          case 'order':
+            return this.renderOrder(q);
+          case 'match':
+            return this.renderMatch(q);
+          default:
+            return this.renderOptions(q);
+        }
+      },
+
+      renderOptions(q) {
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const saved = this.answers[q.id];
+        return `<div class="options-list">${q.options.map((opt, i) => `
+          <div class="option-item ${saved === i ? 'selected' : ''}" data-index="${i}">
+            <span class="option-letter">${letters[i]}</span>
+            <span>${opt}</span>
+          </div>
+        `).join('')}</div>`;
+      },
+
+      renderOrder(q) {
+        const saved = this.answers[q.id];
+        const items = saved ? saved.map(i => q.items[i]) : [...q.items];
+        const orderIndices = saved || q.items.map((_, i) => i);
+        if (!saved) {
+          const shuffled = this.shuffleArray([...q.items.map((_, i) => i)]);
+          return `<div class="order-list" id="order-list">${shuffled.map((idx, pos) => `
+            <div class="order-item" draggable="true" data-original="${idx}">
+              <span class="order-handle">&#9776;</span>
+              <span>${q.items[idx]}</span>
+            </div>
+          `).join('')}</div><p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">
+            Arrastra para ordenar los pasos correctamente.</p>`;
+        }
+        return `<div class="order-list" id="order-list">${orderIndices.map(idx => `
+          <div class="order-item" draggable="true" data-original="${idx}">
+            <span class="order-handle">&#9776;</span>
+            <span>${q.items[idx]}</span>
+          </div>
+        `).join('')}</div>`;
+      },
+
+      renderMatch(q) {
+        const saved = this.answers[q.id] || {};
+        const shuffledRight = q._shuffledRight || this.shuffleArray(q.right.map((_, i) => i));
+        if (!q._shuffledRight) q._shuffledRight = shuffledRight;
+
+        let html = `<div class="match-container">
+          <div class="match-column"><h4>Conceptos</h4>
+            ${q.left.map((item, i) => `
+              <div class="match-item ${saved[i] !== undefined ? 'matched' : ''}"
+                data-side="left" data-index="${i}">${item}</div>
+            `).join('')}
+          </div>
+          <div class="match-column"><h4>Definiciones</h4>
+            ${shuffledRight.map(ri => `
+              <div class="match-item" data-side="right" data-index="${ri}">${q.right[ri]}</div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="match-pairs" id="match-pairs">
+          ${Object.entries(saved).map(([li, ri]) => `
+            <div class="match-pair">${q.left[li]} &rarr; ${q.right[ri]}</div>
+          `).join('')}
+        </div>`;
+        return html;
+      },
+
+      attachAnswerListeners(q) {
+        if (['multiple_choice', 'scenario', 'true_false'].includes(q.type)) {
+          document.querySelectorAll('.option-item').forEach(opt => {
+            opt.addEventListener('click', () => {
+              document.querySelectorAll('.option-item').forEach(o => o.classList.remove('selected'));
+              opt.classList.add('selected');
+              this.answers[q.id] = +opt.dataset.index;
+              this.renderNavDots();
+              if (this.mode === 'study') this.showStudyExplanation(q);
+            });
+          });
+        } else if (q.type === 'fill_blank') {
+          const input = document.getElementById('fill-answer');
+          input.addEventListener('input', () => {
+            this.answers[q.id] = input.value.trim();
+            this.renderNavDots();
+          });
+          input.addEventListener('blur', () => {
+            if (this.mode === 'study' && this.answers[q.id]) this.showStudyExplanation(q);
+          });
+        } else if (q.type === 'order') {
+          this.initDragAndDrop(q);
+        } else if (q.type === 'match') {
+          this.initMatchInteraction(q);
+        }
+      },
+
+      initDragAndDrop(q) {
+        const list = document.getElementById('order-list');
+        if (!list) return;
+        let dragEl = null;
+        list.querySelectorAll('.order-item').forEach(item => {
+          item.addEventListener('dragstart', () => { dragEl = item; item.style.opacity = '0.4'; });
+          item.addEventListener('dragend', () => {
+            item.style.opacity = '1';
+            this.saveOrderAnswer(q);
+          });
+          item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const after = this.getDragAfterElement(list, e.clientY);
+            if (after == null) list.appendChild(dragEl);
+            else list.insertBefore(dragEl, after);
+          });
+        });
+      },
+
+      getDragAfterElement(container, y) {
+        const els = [...container.querySelectorAll('.order-item:not([style*="opacity"])')];
+        return els.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) return { offset, element: child };
+          return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+      },
+
+      saveOrderAnswer(q) {
+        const items = [...document.querySelectorAll('#order-list .order-item')];
+        this.answers[q.id] = items.map(el => +el.dataset.original);
+        this.renderNavDots();
+        if (this.mode === 'study') this.showStudyExplanation(q);
+      },
+
+      initMatchInteraction(q) {
+        let selectedLeft = null;
+        const pairs = { ...(this.answers[q.id] || {}) };
+
+        document.querySelectorAll('.match-item[data-side="left"]').forEach(item => {
+          item.addEventListener('click', () => {
+            if (item.classList.contains('matched')) return;
+            document.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected-left'));
+            item.classList.add('selected-left');
+            selectedLeft = +item.dataset.index;
+          });
+        });
+
+        document.querySelectorAll('.match-item[data-side="right"]').forEach(item => {
+          item.addEventListener('click', () => {
+            if (selectedLeft === null) return;
+            pairs[selectedLeft] = +item.dataset.index;
+            this.answers[q.id] = { ...pairs };
+            selectedLeft = null;
+            this.renderQuestion();
+            if (this.mode === 'study' && Object.keys(pairs).length === q.left.length) {
+              this.showStudyExplanation(q);
+            }
+          });
+        });
+      },
+
+      showStudyExplanation(q) {
+        const container = document.getElementById('study-explanation');
+        const result = this.evaluateAnswer(q, this.answers[q.id]);
+        container.innerHTML = this.buildExplanationHTML(q, result);
+        if (result.correct) {
+          document.querySelectorAll('.option-item').forEach((opt, i) => {
+            if (i === q.correct) opt.classList.add('correct');
+          });
+        } else if (['multiple_choice', 'scenario', 'true_false'].includes(q.type)) {
+          document.querySelectorAll('.option-item').forEach((opt, i) => {
+            if (i === q.correct) opt.classList.add('correct');
+            if (i === this.answers[q.id]) opt.classList.add('incorrect');
+          });
+        }
+      },
+
+      buildExplanationHTML(q, result) {
+        let html = `<div class="explanation-panel">
+          <h4>${result.correct ? '&#10004; Correcto' : '&#10008; Incorrecto'}</h4>
+          <p>${q.explanation}</p>`;
+        if (q.whyWrong && ['multiple_choice', 'scenario', 'true_false'].includes(q.type)) {
+          q.options.forEach((opt, i) => {
+            if (i !== q.correct && q.whyWrong[i]) {
+              html += `<p class="wrong-reason"><strong>${['A','B','C','D','E','F'][i]}:</strong> ${q.whyWrong[i]}</p>`;
+            }
+          });
+        }
+        html += `</div>`;
+        return html;
+      },
+
+      evaluateAnswer(q, answer) {
+        if (answer === undefined || answer === null || answer === '') {
+          return { correct: false, userAnswer: 'Sin respuesta' };
+        }
+        switch (q.type) {
+          case 'multiple_choice':
+          case 'scenario':
+          case 'true_false':
+            return {
+              correct: answer === q.correct,
+              userAnswer: q.options[answer],
+              correctAnswer: q.options[q.correct]
+            };
+          case 'fill_blank': {
+            const normalized = answer.toLowerCase().trim();
+            const valid = q.accept || [q.correct];
+            const correct = valid.some(v => v.toLowerCase().trim() === normalized);
+            return { correct, userAnswer: answer, correctAnswer: q.correct };
+          }
+          case 'order': {
+            const correct = JSON.stringify(answer) === JSON.stringify(q.correctOrder);
+            return {
+              correct,
+              userAnswer: answer.map(i => q.items[i]).join(' → '),
+              correctAnswer: q.correctOrder.map(i => q.items[i]).join(' → ')
+            };
+          }
+          case 'match': {
+            const allMatched = q.left.every((_, i) => answer[i] !== undefined);
+            const correct = allMatched && q.left.every((_, i) => answer[i] === q.correctPairs[i]);
+            return {
+              correct,
+              userAnswer: Object.entries(answer).map(([l, r]) =>
+                `${q.left[l]} → ${q.right[r]}`).join('; '),
+              correctAnswer: q.left.map((l, i) =>
+                `${l} → ${q.right[q.correctPairs[i]]}`).join('; ')
+            };
+          }
+          default:
+            return { correct: false };
+        }
+      },
+
+      confirmFinish() {
+        const unanswered = this.shuffledQuestions.filter(q => this.answers[q.id] === undefined).length;
+        let msg = '¿Deseas finalizar el examen?';
+        if (unanswered > 0) msg += `\n\nTienes ${unanswered} pregunta(s) sin responder.`;
+        if (confirm(msg)) this.finishExam();
+      },
+
+      finishExam() {
+        clearInterval(this.timerInterval);
+        this.showResults();
+      },
+
+      showResults() {
+        this.showScreen('screen-results');
+        let correct = 0, incorrect = 0, unanswered = 0;
+        const details = [];
+
+        this.shuffledQuestions.forEach((q, i) => {
+          const answer = this.answers[q.id];
+          const result = this.evaluateAnswer(q, answer);
+          if (answer === undefined) unanswered++;
+          else if (result.correct) correct++;
+          else incorrect++;
+
+          details.push({ q, i, result, answer });
+        });
+
+        const total = this.shuffledQuestions.length;
+        const score = correct;
+        const pct = Math.round(correct / total * 100);
+        const passed = pct >= 85;
+
+        document.getElementById('results-summary').innerHTML = `
+          <div class="result-stat ${passed ? 'pass' : 'fail'}">
+            <div class="value">${pct}%</div>
+            <div class="label">Porcentaje</div>
+          </div>
+          <div class="result-stat">
+            <div class="value">${score}/${total}</div>
+            <div class="label">Puntaje</div>
+          </div>
+          <div class="result-stat">
+            <div class="value" style="color:var(--success)">${correct}</div>
+            <div class="label">Correctas</div>
+          </div>
+          <div class="result-stat">
+            <div class="value" style="color:var(--danger)">${incorrect}</div>
+            <div class="label">Incorrectas</div>
+          </div>
+          <div class="result-stat">
+            <div class="value" style="color:var(--warning)">${unanswered}</div>
+            <div class="label">Sin responder</div>
+          </div>
+          <div class="result-stat">
+            <div class="value" style="font-size:1.3rem">${this.getElapsedTime()}</div>
+            <div class="label">Tiempo</div>
+          </div>
+        `;
+
+        document.getElementById('results-detail').innerHTML = `
+          <h3 style="margin:1.5rem 0 1rem">Revisión detallada</h3>
+          ${details.map(({ q, i, result, answer }) => {
+            const status = answer === undefined ? 'unanswered' : result.correct ? 'correct' : 'incorrect';
+            return `<div class="review-item ${status}">
+              <div class="review-q">#${i + 1} [${q.topic}] ${q.question}</div>
+              ${q.scenario ? `<div class="scenario-box" style="margin:0.5rem 0">${q.scenario}</div>` : ''}
+              <div class="review-answer">
+                Tu respuesta: <strong>${result.userAnswer || '—'}</strong><br>
+                Respuesta correcta: <strong>${result.correctAnswer || '—'}</strong>
+              </div>
+              ${this.buildExplanationHTML(q, result)}
+            </div>`;
+          }).join('')}
+        `;
+      },
+
+      restart() {
+        this.showScreen('screen-start');
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => App.init());
+  </script>
+</body>
+</html>
